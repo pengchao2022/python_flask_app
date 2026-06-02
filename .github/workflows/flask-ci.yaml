@@ -4,7 +4,6 @@ on:
   pull_request:
     types:
       - closed
-
     paths:
       - 'app/**'           
       - 'Dockerfile'       
@@ -13,7 +12,7 @@ on:
 
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  IMAGE_NAME: todo-app
+  IMAGE_NAME: flask-todo-app
 
 jobs:
   flask-app-build:
@@ -21,9 +20,14 @@ jobs:
       github.event.pull_request.merged == true && 
       github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -31,11 +35,75 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
+      - name: Determine version from commit messages
+        id: version
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 获取 PR 的所有 commits
+            const { data: commits } = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            
+            // 分析 commit messages，只检查 MAJOR/MINOR
+            const messages = commits.map(c => c.commit.message).join('\n');
+            
+            let bumpType = 'PATCH';  // 默认 PATCH
+            
+            if (messages.includes('MAJOR')) {
+              bumpType = 'MAJOR';
+            } else if (messages.includes('MINOR')) {
+              bumpType = 'MINOR';
+            } else {
+              bumpType = 'PATCH';  // 包括 PATCH 和任何其他情况
+            }
+            
+            // 获取当前最新版本（从 Git tags）
+            const { data: tags } = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 10
+            });
+            
+            let currentVersion = '0.0.0';
+            const semverTag = tags.find(tag => /^v\d+\.\d+\.\d+$/.test(tag.name));
+            if (semverTag) {
+              currentVersion = semverTag.name.substring(1);
+            }
+            
+            // 计算新版本
+            const [major, minor, patch] = currentVersion.split('.').map(Number);
+            let newVersion;
+            
+            if (bumpType === 'MAJOR') {
+              newVersion = `${major + 1}.0.0`;
+            } else if (bumpType === 'MINOR') {
+              newVersion = `${major}.${minor + 1}.0`;
+            } else {
+              // 包括 PATCH 和任何其他情况
+              newVersion = `${major}.${minor}.${patch + 1}`;
+            }
+            
+            console.log(`Current version: ${currentVersion}`);
+            console.log(`Bump type: ${bumpType}`);
+            console.log(`New version: ${newVersion}`);
+            
+            core.setOutput('new_version', newVersion);
+            core.setOutput('bump_type', bumpType);
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.new_version }}
             ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Create Git tag
+        run: |
+          git tag v${{ steps.version.outputs.new_version }}
+          git push origin v${{ steps.version.outputs.new_version }}
