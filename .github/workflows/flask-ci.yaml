@@ -10,7 +10,7 @@ env:
   IMAGE_NAME: todo-app
 
 jobs:
-  build:
+  flask-app-build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
