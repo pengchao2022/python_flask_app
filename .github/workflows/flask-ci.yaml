@@ -9,7 +9,7 @@ on:
       - 'app/**'           
       - 'Dockerfile'       
       - 'requirements.txt' 
-      - '.github/workflows/flask-ci.yml'  
+      - '.github/workflows/flask-ci.yaml'  
 
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
