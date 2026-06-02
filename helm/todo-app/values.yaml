@@ -1,0 +1,43 @@
+# 全局设置
+replicaCount: 1
+
+image:
+  repository: ghcr.io/YOUR_GITHUB_USERNAME/todo-app   # 替换为你的镜像仓库
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+# Flask 应用资源限制
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+# MySQL 配置
+mysql:
+  enabled: true
+  image: mysql:8.0
+  database: todo_db
+  user: todo_user
+  password: "StrongPassword123"      # 生产环境建议使用 Secret 管理工具
+  rootPassword: "RootPassword123"
+  persistence:
+    enabled: true
+    size: 5Gi
+    accessModes:
+      - ReadWriteOnce
+    storageClass: ""                  # 使用默认 StorageClass（EKS 中为 gp2/gp3）
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
