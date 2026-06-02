@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -40,14 +40,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // 获取 PR 的所有 commits
+            
             const { data: commits } = await github.rest.pulls.listCommits({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number
             });
             
-            // 分析 commit messages，只检查 MAJOR/MINOR
             const messages = commits.map(c => c.commit.message).join('\n');
             
             let bumpType = 'PATCH';  // 默认 PATCH
@@ -57,10 +56,10 @@ jobs:
             } else if (messages.includes('MINOR')) {
               bumpType = 'MINOR';
             } else {
-              bumpType = 'PATCH';  // 包括 PATCH 和任何其他情况
+              bumpType = 'PATCH';  
             }
             
-            // 获取当前最新版本（从 Git tags）
+            # get the latest version 
             const { data: tags } = await github.rest.repos.listTags({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -73,7 +72,7 @@ jobs:
               currentVersion = semverTag.name.substring(1);
             }
             
-            // 计算新版本
+            # calculate new version
             const [major, minor, patch] = currentVersion.split('.').map(Number);
             let newVersion;
             
@@ -82,7 +81,6 @@ jobs:
             } else if (bumpType === 'MINOR') {
               newVersion = `${major}.${minor + 1}.0`;
             } else {
-              // 包括 PATCH 和任何其他情况
               newVersion = `${major}.${minor}.${patch + 1}`;
             }
             
