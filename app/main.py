@@ -6,7 +6,7 @@ from .models import TodoItem
 def create_app():
     app = Flask(__name__, static_folder='static')
     
-    # 数据库连接 URL 从环境变量获取（格式：mysql+pymysql://user:pass@host:port/db）
+    
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
