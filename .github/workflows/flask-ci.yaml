@@ -15,7 +15,7 @@ env:
   IMAGE_NAME: flask-todo-app
 
 jobs:
-  flask-app-build:
+  flask-app-ci:
     if: |
       github.event.pull_request.merged == true && 
       github.event.pull_request.base.ref == 'main'
