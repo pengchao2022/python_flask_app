@@ -12,7 +12,7 @@ def create_app():
     
     init_db(app)
     
-    # static file route test
+    # static file route
     @app.route('/')
     def index():
         return send_from_directory(app.static_folder, 'index.html')
