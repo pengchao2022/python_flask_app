@@ -101,7 +101,7 @@ jobs:
           #  pushing an existing local tag name to a remote tag with the same name
           git push origin v${{ steps.version.outputs.new_version }}
 
-
+      # renovate auto create PR 
       - name: Trigger Renovate in GitOps repo
         run: |
           curl -X POST \
