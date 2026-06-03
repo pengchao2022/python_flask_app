@@ -73,7 +73,7 @@ jobs:
           
           echo "Current version: ${CURRENT_VERSION}"
           
-          # calculate the new version
+          # calculate the new version to use
           IFS='.' read -r major minor patch <<< "${CURRENT_VERSION}"
           
           if [ "${BUMP_TYPE}" = "MAJOR" ]; then
