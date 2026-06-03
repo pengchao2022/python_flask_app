@@ -102,37 +102,12 @@ jobs:
           git push origin v${{ steps.version.outputs.new_version }}
 
 
-      - name: Checkout GitOps repo
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.GITOPS_REPO }}
-          token: ${{ secrets.GITOPS_PAT }}
-          path: gitops-temp
-
-      - name: Update image tag in GitOps repo
+      - name: Trigger Renovate in GitOps repo
         run: |
-          cd gitops-temp  
-          
-          # 安装 yq（如果还没有）
-          sudo apt-get update && sudo apt-get install -y jq
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
-          
-          # 获取当前版本和新版本
-          CURRENT_TAG=$(yq eval '.image.tag' helm/todo-app/values.yaml)
-          NEW_TAG="${{ steps.version.outputs.new_version }}"
-          
-          echo "Current tag in GitOps repo: ${CURRENT_TAG}"
-          echo "New tag: ${NEW_TAG}"
-          
-          # 更新 values.yaml 中的 tag
-          yq eval -i ".image.tag = \"${NEW_TAG}\"" helm/todo-app/values.yaml
-          
-          # 配置 Git
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions@github.com"
-          
-          # 提交并推送
-          git add helm/todo-app/values.yaml
-          git commit -m "Update image tag from ${CURRENT_TAG} to ${NEW_TAG}" || echo "No changes to commit"
-          git push
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITOPS_PAT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ env.GITOPS_REPO }}/dispatches \
+            -d '{"event_type":"run-renovate"}'
+
+      
