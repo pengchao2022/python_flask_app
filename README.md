@@ -1,6 +1,6 @@
 # python flask app CI
 
-This repo is for Python app build and docker build with a semantic versionbn control then push the image to Dockerhub
+This repo is for Python app build and docker build with a semantic versionbn control then push the image to Dockerhub, finally trigger RUN Renovate in the Gitops CD repo.
 
 
 
@@ -18,4 +18,6 @@ source venv/bin/activate
 ```shell
 pip install -r requirements.txt
 ```
+
+
 
