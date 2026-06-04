@@ -12,7 +12,7 @@ def create_app():
     
     init_db(app)
     
-    # static file route REST API
+    # static file route
     @app.route('/')
     def index():
         return send_from_directory(app.static_folder, 'index.html')
@@ -21,7 +21,7 @@ def create_app():
     def static_files(path):
         return send_from_directory(app.static_folder, path)
     
-    # ---------- Todo REST API ----------
+    # Todo REST API 
     @app.route('/todos', methods=['GET'])
     def get_todos():
         todos = TodoItem.query.all()
