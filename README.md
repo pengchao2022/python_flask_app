@@ -1,4 +1,6 @@
-# python flask app CI/CD 
+# python flask app CI
+
+This repo is for Python app build and docker build with a semantic versionbn control then push the image to Dockerhub
 
 
 
