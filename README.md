@@ -2,7 +2,9 @@
 
 This repo is for Python app build and docker build with a semantic version control then push the image to Dockerhub, finally trigger RUN Renovate in the Gitops CD repo.
 
+## GitOps Design Architecture
 
+![gitops](./gitops.png)
 
 ## Usage
 
